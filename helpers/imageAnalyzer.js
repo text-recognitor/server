@@ -43,7 +43,6 @@ module.exports = function (imgURL, cb) {
                 }
             })
             .then(function(response) {
-              console.log(response, "<= sempat masuk then OK");
                 let lines = response.data.recognitionResults[0].lines;
                 lines = lines.map(x => {
                     return x.text
