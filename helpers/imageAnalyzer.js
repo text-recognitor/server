@@ -1,21 +1,9 @@
-const axios = requier('axios')
+const axios = require('axios')
 
-module.exports = function () {
-    // **********************************************
-    // *** Update or verify the following values. ***
-    // **********************************************
+module.exports = function (cb) {
 
     // Replace <Subscription Key> with your valid subscription key.
     var subscriptionKey = process.env.MICROSOFT_SUBSCRIPTION_KEY;
-
-    // You must use the same Azure region in your REST API method as you used to
-    // get your subscription keys. For example, if you got your subscription keys
-    // from the West US region, replace "westcentralus" in the URL
-    // below with "westus".
-    //
-    // Free trial subscription keys are generated in the "westus" region.
-    // If you use a free trial subscription key, you shouldn't need to change
-    // this region.
     var uriBase = process.env.MICROSOFT_URI_BASE
 
     // Request parameter.
@@ -23,16 +11,13 @@ module.exports = function () {
         "mode": "Handwritten",
     };
 
-    // Display the image.
-    var sourceImageUrl = 'https://storage.googleapis.com/textrecognitor/1554993996957sample.jpeg'
+    // Display the image from GCP
+    var sourceImageUrl = req.file.cloudStoragePublicUrl
 
-    // This operation requires two REST API calls. One to submit the image
-    // for processing, the other to retrieve the text found in the image.
-    //
-    // Make the first REST API call to submit the image for processing.
-    axios.post({
+    axios({
         url: process.env.MICROSOFT_URI_BASE,
         params: params,
+        method: "POST",
         headers: 
         {
             "Content-Type": "application/json",
@@ -40,33 +25,38 @@ module.exports = function () {
         },
         data: {"url": sourceImageUrl}
     })
-    .done((result) => {
+    .then((result) => {
         let timerInterval
-        console.log(result.data);
-        console.log(result.headers);
         console.log(` Handwritten text submitted. Waiting 10 seconds to retrieve the recognized text...`)
         setTimeout(function () {
             // "Operation-Location" in the response contains the URI
             // to retrieve the recognized text.
-            var operationLocation = result.headers["Operation-Location"];
+            var operationLocation = result.headers["operation-location"];
 
             // Make the second REST API call and get the response.
-            axios.get({
+            axios({
                 url: operationLocation,
+                method: "GET",
                 headers: {
                     "Content-Type": "application/json",
                     "Ocp-Apim-Subscription-Key": subscriptionKey
                 }
             })
-            .done(function({data}) {
-                console.log(`after calling operationLocation ${data}`);
+            .then(function(response) {
+                let lines = response.data.recognitionResults[0].lines;
+                lines = lines.map(x => {
+                    return x.text
+                })
+                cb(null, lines)
             })
-            .fail(err => {
+            .catch(err => {
                 console.log(`error ---- ${err}`);
+                cb(err)
             });
         }, 10000);
     })
-    .fail(err => {
+    .catch(err => {
         console.log(`error ---- ${err}`);
+        cb(err)
     });
 };
