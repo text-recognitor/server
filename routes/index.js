@@ -8,12 +8,6 @@ router.get('/', (req, res) => {
     res.status(200).json({msg : 'hello, connected!'})
 })
 router.post("/pictures", images.multer.single('image'), images.sendUploadToGCS, PictureController.uploadFile)
-
-module.exports = router
-
-
-
-
-
+router.post('/analyze', PictureController.analyze)
 
 module.exports = router

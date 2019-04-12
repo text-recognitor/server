@@ -7,6 +7,10 @@ const cors = require("cors")
 const port = process.env.PORT || 3000
 const routes = require("./routes")
 
+const corsOptions = {
+  exposedHeaders: 'Authorization',
+};
+
 mongoose.connect("mongodb://localhost:27017/text-recognitor", { useNewUrlParser: true })
 
 app.use(cors())
