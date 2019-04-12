@@ -4,6 +4,18 @@ const Picture = require("../models/picture")
 
 class PictureController {
 
+   static fetchAllImages(req, res) {
+      Picture.find({})
+      .limit(3)
+      .then(pictures => {
+          res.status(200).json(pictures)
+      })
+      .catch(err => {
+        console.log(err, 'bagian fetch image')
+        res.status(400).json(err)
+      })
+  }
+
     static uploadFile(req, res) {
         Picture.create({
             imgURL: req.file.cloudStoragePublicUrl
@@ -18,16 +30,39 @@ class PictureController {
     }
 
     static analyze(req, res) {
-        analyzeImage(function(err, data) {
-            if(err)
-            {
-                res.status(500).json({error: err})
-            }
-            else {
-                console.log(data);
-                res.status(200).json({data: data})
-            }
-        })
+      analyzeImage(req.body.imgURL, function(err, data) {
+
+        if(err)
+        {
+            res.status(500).json(err)
+        }
+        else {
+          data = data.join("\n")
+
+            res.status(200).json({
+              imgURL: req.body.imgURL,
+              imgText: data
+            })
+        }
+      })
+    }
+
+    static addImgTextToPicture(req, res) {
+      console.log("UPDATING");
+      console.log(req.body);
+      Picture.findOneAndUpdate({
+        imgURL: req.body.imgURL
+      }, {
+        $set: {
+          imgText: req.body.imgText
+        }
+      }, { new: true })
+      .then(updatedPiture => {
+        res.status(200).json(updatedPiture)
+      })
+      .catch(err => {
+        console.log(err);
+      })
     }
 }
 module.exports = PictureController
