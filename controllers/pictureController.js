@@ -18,16 +18,21 @@ class PictureController {
     }
 
     static analyze(req, res) {
-        analyzeImage(function(err, data) {
-            if(err)
-            {
-                res.status(500).json({error: err})
-            }
-            else {
-                console.log(data);
-                res.status(200).json({data: data})
-            }
-        })
+      analyzeImage(req.body.imgURL, function(err, data) {
+
+        if(err)
+        {
+            res.status(500).json(err)
+        }
+        else {
+          data = data.join("\n")
+
+            res.status(200).json({
+              imgURL: req.body.imgURL,
+              imgText: data
+            })
+        }
+      })
     }
 }
 module.exports = PictureController

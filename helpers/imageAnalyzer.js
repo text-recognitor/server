@@ -1,6 +1,6 @@
 const axios = require('axios')
 
-module.exports = function (cb) {
+module.exports = function (imgURL, cb) {
 
     // Replace <Subscription Key> with your valid subscription key.
     var subscriptionKey = process.env.MICROSOFT_SUBSCRIPTION_KEY;
@@ -12,13 +12,13 @@ module.exports = function (cb) {
     };
 
     // Display the image from GCP
-    var sourceImageUrl = req.file.cloudStoragePublicUrl
+    var sourceImageUrl = imgURL
 
     axios({
-        url: process.env.MICROSOFT_URI_BASE,
+        url: uriBase,
         params: params,
         method: "POST",
-        headers: 
+        headers:
         {
             "Content-Type": "application/json",
             "Ocp-Apim-Subscription-Key": subscriptionKey
@@ -43,6 +43,7 @@ module.exports = function (cb) {
                 }
             })
             .then(function(response) {
+              console.log(response, "<= sempat masuk then OK");
                 let lines = response.data.recognitionResults[0].lines;
                 lines = lines.map(x => {
                     return x.text
@@ -51,12 +52,12 @@ module.exports = function (cb) {
             })
             .catch(err => {
                 console.log(`error ---- ${err}`);
-                cb(err)
+                cb(err, null)
             });
         }, 10000);
     })
     .catch(err => {
         console.log(`error ---- ${err}`);
-        cb(err)
+        cb(err, null)
     });
 };
