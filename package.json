@@ -19,7 +19,7 @@
   "homepage": "https://github.com/text-recognitor/server#readme",
   "dependencies": {
     "@google-cloud/storage": "^1.2.0",
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.18.3",
     "compressorjs": "^1.0.5",
